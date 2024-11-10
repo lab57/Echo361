@@ -6,7 +6,7 @@ from pyannote.audio import Pipeline
 from dotenv import load_dotenv
 from pydub import AudioSegment
 import json
-import pandas as pd
+import csv
 
 # Load environment variables
 load_dotenv()
@@ -63,11 +63,13 @@ def save_segments(audio_file, diarization, csv_file, output_dir="segments"):
     segments_metadata = []
 
     # Read segment start times from CSV file
+    start_times = []
     if os.path.exists(csv_file):
-        cuts_df = pd.read_csv(csv_file)
-        start_times = cuts_df['start'].tolist()
-    else:
-        start_times = []
+        with open(csv_file, newline='') as f:
+            reader = csv.reader(f, delimiter='\n')
+            for row in reader:
+                if row:  # Skip any empty rows
+                    start_times.append(float(row[0]))
 
     # Process segments based on diarization
     for i, (turn, _, speaker) in enumerate(diarization.itertracks(yield_label=True)):
@@ -113,7 +115,7 @@ def main():
     segments_directory = "./segments"
     clear_segments_folder(segments_directory)
     
-    duration = 20  # Recording duration in seconds
+    duration = 30  # Recording duration in seconds
     sample_rate = 16000  # Sample rate in Hz
 
     audio = record_audio(duration, sample_rate)
@@ -125,7 +127,7 @@ def main():
         print("Failed to complete diarization. Exiting.")
         return
 
-    csv_file = "./output/slide_timestamps.csv"  # Path to the CSV file with start times
+    csv_file = "cuts.csv"  # Path to the CSV file with start times
     save_segments(audio_file, diarization, csv_file)
 
 if __name__ == "__main__":

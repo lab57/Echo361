@@ -2,13 +2,7 @@
     {
         "segment_file": "segments\\segment_0.wav",
         "speaker": "SPEAKER_00",
-        "start": 0.45284375,
-        "end": 2.95034375
-    },
-    {
-        "segment_file": "segments\\segment_1.wav",
-        "speaker": "SPEAKER_00",
-        "start": 3.6590937500000003,
+        "start": 0.8915937500000001,
         "end": 29.96721875
     }
 ]
