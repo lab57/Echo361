@@ -4,3 +4,5 @@ venv/
 .mp4
 output/
 .png
+.wav
+.vscode/
