@@ -116,7 +116,7 @@ def save_slides(slides, output_dir):
         
     for timestamp, slide in slides:
         timestamps.append(timestamp)
-        slide_filename = f"{output_dir}/slide_{timestamp:.3f}s.png"
+        slide_filename = f"{output_dir}/slide-{timestamp:.3f}s.png"
         cv2.imwrite(slide_filename, slide)
         
     with open(csv_file_path, mode='w', newline='') as file:
@@ -127,6 +127,11 @@ def save_slides(slides, output_dir):
         for timestamp in timestamps:
             writer.writerow([timestamp])
  
+def video_into_filtered_sides(video_path):
+    unfiltered_slides = video_into_slides(video_path)
+    filtered_slides = filter_similar_slides(unfiltered_slides, threshold = .95, time_threshold = 5)
+    return filtered_slides
+
 if __name__ == "__main__":
     start = time.time()
     # video_path = "Hackathon Test Recording.mp4"
