@@ -1,11 +1,12 @@
 import os
+import shutil
 import sounddevice as sd
 import soundfile as sf
 from pyannote.audio import Pipeline
 from dotenv import load_dotenv
 from pydub import AudioSegment
 import json
-import shutil
+import pandas as pd
 
 # Load environment variables
 load_dotenv()
@@ -55,12 +56,20 @@ def diarize_audio(audio_file):
         print(f"Error during diarization: {e}")
         return None
 
-def save_segments(audio_file, diarization, output_dir="segments"):
+def save_segments(audio_file, diarization, csv_file, output_dir="segments"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     segments_metadata = []
 
+    # Read segment start times from CSV file
+    if os.path.exists(csv_file):
+        cuts_df = pd.read_csv(csv_file)
+        start_times = cuts_df['start'].tolist()
+    else:
+        start_times = []
+
+    # Process segments based on diarization
     for i, (turn, _, speaker) in enumerate(diarization.itertracks(yield_label=True)):
         segment_file = os.path.join(output_dir, f"segment_{i}.wav")
         audio = AudioSegment.from_wav(audio_file)
@@ -72,6 +81,21 @@ def save_segments(audio_file, diarization, output_dir="segments"):
             "speaker": speaker,
             "start": turn.start,
             "end": turn.end
+        })
+
+    # Process custom cuts from the CSV file
+    audio = AudioSegment.from_wav(audio_file)
+    for i, start in enumerate(start_times):
+        end = start_times[i + 1] if i + 1 < len(start_times) else len(audio) / 1000  # Set end to audio length if last segment
+        segment_file = os.path.join(output_dir, f"custom_cut_{i}.wav")
+        segment = audio[int(start * 1000):int(end * 1000)]
+        segment.export(segment_file, format="wav")
+
+        segments_metadata.append({
+            "segment_file": segment_file,
+            "speaker": "unknown",
+            "start": start,
+            "end": end
         })
 
     with open(os.path.join(output_dir, "segments_metadata.json"), "w") as f:
@@ -101,7 +125,8 @@ def main():
         print("Failed to complete diarization. Exiting.")
         return
 
-    save_segments(audio_file, diarization)
+    csv_file = "./output/slide_timestamps.csv"  # Path to the CSV file with start times
+    save_segments(audio_file, diarization, csv_file)
 
 if __name__ == "__main__":
     main()
