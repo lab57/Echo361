@@ -113,7 +113,12 @@ def save_slides(slides, output_dir):
     
     csv_filename = "slide_timestamps.csv"
     csv_file_path = os.path.join(output_dir, csv_filename)
-    
+        
+    for timestamp, slide in slides:
+        timestamps.append(timestamp)
+        slide_filename = f"{output_dir}/slide_{timestamp:.3f}s.png"
+        cv2.imwrite(slide_filename, slide)
+        
     with open(csv_file_path, mode='w', newline='') as file:
         writer = csv.writer(file)
         
@@ -121,11 +126,6 @@ def save_slides(slides, output_dir):
         
         for timestamp in timestamps:
             writer.writerow([timestamp])
-    
-    for timestamp, slide in slides:
-        timestamps.append(timestamp)
-        slide_filename = f"{output_dir}/slide_{timestamp:.3f}s.png"
-        cv2.imwrite(slide_filename, slide)
  
 if __name__ == "__main__":
     start = time.time()
