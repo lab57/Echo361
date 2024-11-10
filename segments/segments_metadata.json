@@ -1,8 +1,26 @@
 [
     {
-        "segment_file": "segments\\segment_0.wav",
-        "speaker": "SPEAKER_00",
-        "start": 0.8915937500000001,
-        "end": 29.96721875
+        "segment_file": "segments\\custom_cut_0.wav",
+        "speaker": "unknown",
+        "start": 0.0,
+        "end": 5.0
+    },
+    {
+        "segment_file": "segments\\custom_cut_1.wav",
+        "speaker": "unknown",
+        "start": 5.0,
+        "end": 8.0
+    },
+    {
+        "segment_file": "segments\\custom_cut_2.wav",
+        "speaker": "unknown",
+        "start": 8.0,
+        "end": 9.0
+    },
+    {
+        "segment_file": "segments\\custom_cut_3.wav",
+        "speaker": "unknown",
+        "start": 9.0,
+        "end": 10.0
     }
 ]

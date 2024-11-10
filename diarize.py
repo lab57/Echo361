@@ -2,7 +2,6 @@ import os
 import shutil
 import sounddevice as sd
 import soundfile as sf
-from pyannote.audio import Pipeline
 from dotenv import load_dotenv
 from pydub import AudioSegment
 import json
@@ -10,26 +9,6 @@ import csv
 
 # Load environment variables
 load_dotenv()
-
-# Check if the Hugging Face token is loaded
-hf_token = os.getenv('HF_TOKEN')
-if hf_token is None:
-    raise ValueError("Hugging Face token not found in environment variables")
-
-# Ensure the TORCH_HOME environmental variable is set
-os.environ['TORCH_HOME'] = os.path.expanduser('~/.cache/torch')
-os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
-
-def initialize_pipeline(token):
-    try:
-        pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization", use_auth_token=token)
-        print("Pipeline initialized successfully")
-        return pipeline
-    except Exception as e:
-        print(f"Error initializing pipeline: {e}")
-        return None
-
-pipeline = initialize_pipeline(hf_token)
 
 def record_audio(duration, sample_rate):
     print("Recording...")
@@ -42,21 +21,7 @@ def save_audio_to_file(audio, sample_rate, file_name):
     sf.write(file_name, audio, sample_rate)
     print(f"Audio saved to file: {file_name}")
 
-def diarize_audio(audio_file):
-    if pipeline is None:
-        print("Pipeline is not initialized. Exiting diarization.")
-        return None
-
-    try:
-        print("Starting diarization...")
-        diarization = pipeline(audio_file)
-        print("Diarization completed successfully.")
-        return diarization
-    except Exception as e:
-        print(f"Error during diarization: {e}")
-        return None
-
-def save_segments(audio_file, diarization, csv_file, output_dir="segments"):
+def save_segments(audio_file, csv_file, output_dir="segments"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -65,25 +30,23 @@ def save_segments(audio_file, diarization, csv_file, output_dir="segments"):
     # Read segment start times from CSV file
     start_times = []
     if os.path.exists(csv_file):
+        print(f"Reading start times from {csv_file}")
         with open(csv_file, newline='') as f:
             reader = csv.reader(f, delimiter='\n')
+            next(reader)  # Skip the header row
             for row in reader:
                 if row:  # Skip any empty rows
-                    start_times.append(float(row[0]))
-
-    # Process segments based on diarization
-    for i, (turn, _, speaker) in enumerate(diarization.itertracks(yield_label=True)):
-        segment_file = os.path.join(output_dir, f"segment_{i}.wav")
-        audio = AudioSegment.from_wav(audio_file)
-        segment = audio[int(turn.start * 1000):int(turn.end * 1000)]
-        segment.export(segment_file, format="wav")
-
-        segments_metadata.append({
-            "segment_file": segment_file,
-            "speaker": speaker,
-            "start": turn.start,
-            "end": turn.end
-        })
+                    try:
+                        start_time = float(row[0])
+                        start_times.append(start_time)
+                        print(f"Read start time: {start_time}")
+                    except ValueError:
+                        print(f"Could not convert row to float: {row[0]}")
+    else:
+        print(f"CSV file {csv_file} not found!")
+        return
+    
+    print(f"Total start times read: {len(start_times)}")
 
     # Process custom cuts from the CSV file
     audio = AudioSegment.from_wav(audio_file)
@@ -92,6 +55,7 @@ def save_segments(audio_file, diarization, csv_file, output_dir="segments"):
         segment_file = os.path.join(output_dir, f"custom_cut_{i}.wav")
         segment = audio[int(start * 1000):int(end * 1000)]
         segment.export(segment_file, format="wav")
+        print(f"Created segment: {segment_file} from {start} to {end}")
 
         segments_metadata.append({
             "segment_file": segment_file,
@@ -115,20 +79,15 @@ def main():
     segments_directory = "./segments"
     clear_segments_folder(segments_directory)
     
-    duration = 30  # Recording duration in seconds
+    duration = 10  # Recording duration in seconds
     sample_rate = 16000  # Sample rate in Hz
 
     audio = record_audio(duration, sample_rate)
     audio_file = "recorded_audio.wav"
     save_audio_to_file(audio, sample_rate, audio_file)
 
-    diarization = diarize_audio(audio_file)
-    if diarization is None:
-        print("Failed to complete diarization. Exiting.")
-        return
-
-    csv_file = "cuts.csv"  # Path to the CSV file with start times
-    save_segments(audio_file, diarization, csv_file)
+    csv_file = "./output/slide_timestamps.csv"  # Path to the CSV file with start times
+    save_segments(audio_file, csv_file)
 
 if __name__ == "__main__":
     main()
