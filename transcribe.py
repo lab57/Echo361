@@ -84,7 +84,7 @@ def transcribe_audio(file_path):
         return None
 
 def main():
-    duration = 5  # Recording duration in seconds
+    duration = 30  # Recording duration in seconds
     sample_rate = 16000  # Sample rate in Hz
 
     # Record audio
