@@ -46,7 +46,7 @@ def process_audio_files(directory):
 
                 # Write the file name and transcription to the transcript.txt file
                 # f.write(f"\nFile: {file_name}\n")
-                f.write(f"{transcript}\n\n")
+                f.write(f"{transcript} | ")
 
                 # print(f"Transcription for {file_name} added to transcript.txt")
 

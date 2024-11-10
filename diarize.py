@@ -5,6 +5,7 @@ from pyannote.audio import Pipeline
 from dotenv import load_dotenv
 from pydub import AudioSegment
 import json
+import shutil
 
 # Load environment variables
 load_dotenv()
@@ -78,8 +79,17 @@ def save_segments(audio_file, diarization, output_dir="segments"):
 
     print(f"Segments and metadata saved to {output_dir}")
 
+def clear_segments_folder(folder_path):
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+    os.makedirs(folder_path)
+    print(f"Recreated folder: {folder_path}")
+
 def main():
-    duration = 30  # Recording duration in seconds
+    segments_directory = "./segments"
+    clear_segments_folder(segments_directory)
+    
+    duration = 20  # Recording duration in seconds
     sample_rate = 16000  # Sample rate in Hz
 
     audio = record_audio(duration, sample_rate)

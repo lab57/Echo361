@@ -1,44 +1,14 @@
 [
     {
         "segment_file": "segments\\segment_0.wav",
-        "speaker": "SPEAKER_01",
-        "start": 2.5959687500000004,
-        "end": 9.531593750000003
+        "speaker": "SPEAKER_00",
+        "start": 0.45284375,
+        "end": 2.95034375
     },
     {
         "segment_file": "segments\\segment_1.wav",
         "speaker": "SPEAKER_00",
-        "start": 9.531593750000003,
-        "end": 16.46721875
-    },
-    {
-        "segment_file": "segments\\segment_2.wav",
-        "speaker": "SPEAKER_02",
-        "start": 16.46721875,
-        "end": 18.52596875
-    },
-    {
-        "segment_file": "segments\\segment_3.wav",
-        "speaker": "SPEAKER_03",
-        "start": 18.52596875,
-        "end": 21.86721875
-    },
-    {
-        "segment_file": "segments\\segment_4.wav",
-        "speaker": "SPEAKER_03",
-        "start": 23.58846875,
-        "end": 23.85846875
-    },
-    {
-        "segment_file": "segments\\segment_5.wav",
-        "speaker": "SPEAKER_00",
-        "start": 25.47846875,
-        "end": 29.47784375
-    },
-    {
-        "segment_file": "segments\\segment_6.wav",
-        "speaker": "SPEAKER_01",
-        "start": 28.48221875,
+        "start": 3.6590937500000003,
         "end": 29.96721875
     }
 ]
