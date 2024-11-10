@@ -2,3 +2,5 @@ venv/
 *.pyc
 .env
 .mp4
+output/
+.png
