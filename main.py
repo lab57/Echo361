@@ -1,12 +1,16 @@
 import process_video
 import create_pdf
+import ffmpeg
 import os
+import time
 
 
 def recording_to_docs(video_path):
 
     # Step 1: Split recording into audio and video
-    
+    output_audio_path = "output_audio.wav"
+    ffmpeg.input(video_path).output(output_audio_path).run()
+
     # Step 2: Get slides and timestamps from video
     slides = process_video.video_into_filtered_sides(video_path)
     timestamps = [s[0] for s in slides]
@@ -42,5 +46,8 @@ def recording_to_docs(video_path):
     # Step 9: Clean up any created files
 
 if __name__ == "__main__":
-    video_path = "Hackathon Test Recording.mp4"
+    start = time.time()
+    video_path = "sept13-cs237.mp4"
     recording_to_docs(video_path)
+    end = time.time()
+    print(end-start)

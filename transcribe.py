@@ -3,11 +3,7 @@ import sounddevice as sd
 import soundfile as sf
 import openai
 from pyannote.audio import Pipeline
-from dotenv import load_dotenv
-from pydub import AudioSegment
 
-# Load environment variables
-load_dotenv()
 
 # Check if the API key is loaded
 api_key = os.getenv('OPENAI_API_KEY')

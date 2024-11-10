@@ -89,7 +89,7 @@ def filter_similar_slides(slides, threshold=0.95, time_threshold=1.0):
     filtered_slides = [group[-1] for group in grouped_slides]
 
     # Step 3: Remove slides that are displayed for less than time_threshold.
-    final_slides = []
+    time_filtered_slides = []
     for i in range(len(filtered_slides) - 1):
         current_timestamp, current_slide = filtered_slides[i]
         next_timestamp, _ = filtered_slides[i + 1]
@@ -97,13 +97,50 @@ def filter_similar_slides(slides, threshold=0.95, time_threshold=1.0):
         time_displayed = next_timestamp - current_timestamp
 
         if time_displayed >= time_threshold:
-            final_slides.append((current_timestamp, current_slide))
+            time_filtered_slides.append((current_timestamp, current_slide))
+        else:
+            print(f"slide at {current_timestamp} is only playing for {time_displayed} seconds and wont be displayed.")
 
     # Always add the last slide since there's no next slide to compare its time duration.
-    final_slides.append(filtered_slides[-1])
+    time_filtered_slides.append(filtered_slides[-1])
 
-    return final_slides
+    return time_filtered_slides
 
+def filter_webcam_frames(slide_frames, webcam_area_threshold=0.05):
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    full_body_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fullbody.xml')
+    
+    filtered_frames = []
+    
+    for timestamp, frame in slide_frames:
+        if frame is None:
+            continue
+        
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5, minSize=(100, 100))
+        
+        bodies = full_body_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5, minSize=(100, 100))
+
+        frame_area = frame.shape[0] * frame.shape[1]
+        
+        total_webcam_area = 0
+        
+        for (x, y, w, h) in faces:
+            total_webcam_area += w * h
+        
+        for (x, y, w, h) in bodies:
+            total_webcam_area += w * h
+        
+        face_proportion = total_webcam_area / frame_area
+        if face_proportion > webcam_area_threshold:
+            print(f"Frame at timestamp {timestamp} is likely a webcam shot (skipped). Face proportion is {face_proportion}")
+        else:
+            filtered_frames.append((timestamp, frame))
+            print(f"Frame at timestamp {timestamp} is likely a slide. Face proportion is {face_proportion}")
+    
+    
+    return filtered_frames
 
 def save_slides(slides, output_dir):
     if not os.path.exists(output_dir):
@@ -130,7 +167,8 @@ def save_slides(slides, output_dir):
 def video_into_filtered_sides(video_path):
     unfiltered_slides = video_into_slides(video_path)
     filtered_slides = filter_similar_slides(unfiltered_slides, threshold = .95, time_threshold = 5)
-    return filtered_slides
+    face_filtered_slides = filter_webcam_frames(filtered_slides)
+    return face_filtered_slides
 
 if __name__ == "__main__":
     start = time.time()
